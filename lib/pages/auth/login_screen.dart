@@ -53,6 +53,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   const SizedBox(height: 30),
+                  const Text(
+                    "Welcome",
+                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 30),
                   PhoneInputField(controller: _controller),
                   const SizedBox(height: 30),
                   NextButton(onPress: onNextClicked),

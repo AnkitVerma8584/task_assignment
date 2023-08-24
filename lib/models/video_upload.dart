@@ -1,6 +1,6 @@
 class VideoUploadState {
-  final double progress;
+  final String message;
   final bool isError, isSuccess;
 
-  VideoUploadState(this.progress, this.isError, this.isSuccess);
+  VideoUploadState(this.message, this.isError, this.isSuccess);
 }

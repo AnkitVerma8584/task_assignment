@@ -1,15 +1,10 @@
 import 'dart:async';
-import 'dart:io';
-
-import 'package:black_coffer/models/post.dart';
 import 'package:black_coffer/models/video_upload.dart';
 import 'package:black_coffer/services/storage_repository.dart';
 import 'package:cached_video_preview/cached_video_preview.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-
 import '../../models/user.dart';
-import '../../services/firestore_repository.dart';
 
 class UploadScreen extends StatefulWidget {
   const UploadScreen({super.key, required this.location, required this.user});
@@ -20,6 +15,9 @@ class UploadScreen extends StatefulWidget {
 }
 
 class _UploadScreenState extends State<UploadScreen> {
+  String path = "";
+  ValueNotifier<bool> isUploading = ValueNotifier(false);
+
   void getVideoFile() async {
     XFile? file = await ImagePicker().pickVideo(source: ImageSource.camera);
     setState(() {
@@ -30,9 +28,6 @@ class _UploadScreenState extends State<UploadScreen> {
       }
     });
   }
-
-  String path = "";
-  late Post post;
 
   final StreamController<VideoUploadState> _streamController =
       StreamController<VideoUploadState>();
@@ -94,33 +89,31 @@ class _UploadScreenState extends State<UploadScreen> {
                     ),
                     ElevatedButton(
                         onPressed: () {
-                          uploadVideoStream(
-                            file: File(path),
-                            uid: widget.user.uid,
-                            title: _controllerMap['title']!.text,
-                            description: _controllerMap['description']!.text,
-                            category: _controllerMap['category']!.text,
-                            location: widget.location,
-                            streamController: _streamController,
-                          );
+                          if (!isUploading.value) {
+                            uploadVideoStream(
+                              filePath: path,
+                              uid: widget.user.uid,
+                              title: _controllerMap['title']!.text,
+                              description: _controllerMap['description']!.text,
+                              category: _controllerMap['category']!.text,
+                              location: widget.location,
+                              streamController: _streamController,
+                            );
+                          }
                         },
-                        child: const Text("Upload")),
+                        child: Text(
+                            isUploading.value ? "Uploading..." : "Upload")),
                     StreamBuilder<VideoUploadState>(
                         stream: _streamController.stream,
                         builder: (context, snapshot) {
                           if (snapshot.hasData) {
                             var v = snapshot.data!;
-                            if (v.progress != 100) {
-                              return Text("PROGRESS = ${v.progress}%");
+                            if (v.isError || v.isSuccess) {
+                              isUploading.value = false;
                             }
-                            if (v.isError == true) {
-                              return const Text("ERROR");
-                            }
-                            if (v.isSuccess) {
-                              return const Text("Post uploaded successfully.");
-                            }
+                            return Text(v.message);
                           }
-                          return const Text("Loading...");
+                          return const SizedBox(height: 10);
                         })
                   ],
                 )

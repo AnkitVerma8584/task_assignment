@@ -5,7 +5,7 @@ import 'package:otp_text_field/otp_field.dart';
 import 'package:otp_text_field/otp_field_style.dart';
 import 'package:otp_text_field/style.dart';
 import '../../models/user.dart';
-import '../../services/user_repository.dart';
+import '../../services/firestore_repository.dart';
 import '../../util/common.dart';
 import '../home/home_screen.dart';
 

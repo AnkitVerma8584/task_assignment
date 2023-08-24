@@ -12,8 +12,10 @@ saveUser(MyUser user) async {
           printLog("Some error in user creation : ${e.toString()}"));
 }
 
-savePost(Post post) async {
-  final docRef = db.collection('posts').doc("${post.userId}_$getTimeStamp()");
+savePost(Post post, String child) async {
+  final docRef = db.collection('posts').doc(child);
   await docRef.set(post.toJson()).then((value) => printLog("Post submitted"),
       onError: (e) => printLog("Some error in post : ${e.toString()}"));
 }
+
+Stream<QuerySnapshot> getPostStreams() => db.collection('posts').snapshots();

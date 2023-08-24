@@ -41,27 +41,6 @@ class DefaultFirebaseOptions {
       authDomain: 'black-coffer-6ae4f.firebaseapp.com',
       storageBucket: 'black-coffer-6ae4f.appspot.com',
       measurementId: "G-3XBVGVNB3N");
-  /*// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyBNnCCLBesaB8Z91-R3sD_3jOJtTVJgiM4",
-  authDomain: "black-coffer-6ae4f.firebaseapp.com",
-  projectId: "black-coffer-6ae4f",
-  storageBucket: "black-coffer-6ae4f.appspot.com",
-  messagingSenderId: "1022185698524",
-  appId: "1:1022185698524:web:b914048abad04f83d9b019",
-  measurementId: "G-3XBVGVNB3N"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app); */
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyANpH2CGi7hzVRRv9YwPE9yVb_H9bo_8xQ',
