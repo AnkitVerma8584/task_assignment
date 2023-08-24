@@ -25,7 +25,7 @@ class MyApp extends StatelessWidget {
 
   MyUser? getUser() {
     User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) return null;
+    if (user == null) return MyUser(uid: "uid", phoneNumber: "Placeholder");
     return MyUser(uid: user.uid, phoneNumber: user.phoneNumber!);
   }
 

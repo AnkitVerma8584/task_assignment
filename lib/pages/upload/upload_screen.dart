@@ -43,12 +43,14 @@ class _UploadScreenState extends State<UploadScreen> {
   void initState() {
     super.initState();
     getVideoFile();
+    _controllerMap['location'] = TextEditingController(text: widget.location);
   }
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
         child: Scaffold(
+      appBar: AppBar(title: const Text("Upload post")),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Form(
@@ -56,24 +58,48 @@ class _UploadScreenState extends State<UploadScreen> {
           child: Column(
             children: [
               TextFormField(
-                controller: _controllerMap['title'],
-                decoration: const InputDecoration(
-                    label: Text("Title"), border: OutlineInputBorder()),
-              ),
+                  controller: _controllerMap['title'],
+                  decoration: const InputDecoration(
+                      label: Text("Title"), border: OutlineInputBorder()),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return "Required*";
+                    }
+                    return null;
+                  }),
               const SizedBox(height: 24),
               TextFormField(
-                controller: _controllerMap['description'],
-                decoration: const InputDecoration(
-                    label: Text("Description"), border: OutlineInputBorder()),
-              ),
+                  maxLines: 3,
+                  controller: _controllerMap['description'],
+                  decoration: const InputDecoration(
+                      label: Text("Description"), border: OutlineInputBorder()),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return "Required*";
+                    }
+                    return null;
+                  }),
               const SizedBox(height: 24),
               TextFormField(
-                controller: _controllerMap['category'],
-                decoration: const InputDecoration(
-                    label: Text("Category"), border: OutlineInputBorder()),
-              ),
+                  controller: _controllerMap['category'],
+                  decoration: const InputDecoration(
+                      label: Text("Category"), border: OutlineInputBorder()),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return "Required*";
+                    }
+                    return null;
+                  }),
               const SizedBox(height: 24),
-              Text("Location : ${widget.location}"),
+              TextFormField(
+                key: key,
+                controller: _controllerMap['location'],
+                readOnly: true,
+                decoration: const InputDecoration(
+                    prefixIcon: Icon(Icons.location_pin),
+                    label: Text("Location"),
+                    border: OutlineInputBorder()),
+              ),
               const SizedBox(height: 24),
               if (path.isNotEmpty)
                 Column(
@@ -89,7 +115,8 @@ class _UploadScreenState extends State<UploadScreen> {
                     ),
                     ElevatedButton(
                         onPressed: () {
-                          if (!isUploading.value) {
+                          if (!isUploading.value &&
+                              key.currentState!.validate()) {
                             uploadVideoStream(
                               filePath: path,
                               uid: widget.user.uid,
@@ -101,8 +128,11 @@ class _UploadScreenState extends State<UploadScreen> {
                             );
                           }
                         },
-                        child: Text(
-                            isUploading.value ? "Uploading..." : "Upload")),
+                        child: ValueListenableBuilder(
+                          valueListenable: isUploading,
+                          builder: (context, value, widget) =>
+                              Text(value ? "Uploading..." : "Upload"),
+                        )),
                     StreamBuilder<VideoUploadState>(
                         stream: _streamController.stream,
                         builder: (context, snapshot) {

@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'package:black_coffer/pages/auth/otp_screen.dart';
 import 'package:black_coffer/util/common.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -7,6 +6,7 @@ import 'package:flutter/services.dart';
 import '../../models/user.dart';
 import '../home/home_screen.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:google_fonts/google_fonts.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -17,6 +17,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _controller = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  final ValueNotifier<bool> isUploading = ValueNotifier(false);
 
   @override
   void dispose() {
@@ -27,7 +28,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void onNextClicked() {
     if (_formKey.currentState!.validate()) {
       String phone = "+91${_controller.text}";
-      registerUser(phone, context);
+      registerUser(isUploading, phone, context);
     }
   }
 
@@ -53,14 +54,25 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   const SizedBox(height: 30),
-                  const Text(
+                  Text(
                     "Welcome",
-                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+                    style: GoogleFonts.dmSerifDisplay(
+                        fontSize: 30, fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 70),
                   PhoneInputField(controller: _controller),
                   const SizedBox(height: 30),
-                  NextButton(onPress: onNextClicked),
+                  ValueListenableBuilder(
+                      valueListenable: isUploading,
+                      builder: (context, value, widget) {
+                        if (value) {
+                          return const Align(
+                              child: CircularProgressIndicator.adaptive());
+                        } else {
+                          return widget!;
+                        }
+                      },
+                      child: NextButton(onPress: onNextClicked))
                 ],
               ),
             ),
@@ -133,19 +145,24 @@ class NextButton extends StatelessWidget {
   }
 }
 
-Future<void> registerUser(String mobile, BuildContext context) async {
+Future<void> registerUser(ValueNotifier<bool> isUploading, String mobile,
+    BuildContext context) async {
+  isUploading.value = true;
   FirebaseAuth auth = FirebaseAuth.instance;
   var nav = Navigator.of(context);
 
   MaterialPageRoute getRoute(MyUser user) =>
       MaterialPageRoute(builder: (context) => HomeScreen(user: user));
   kIsWeb
-      ? auth.signInWithPhoneNumber(mobile)
+      ? Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (_) => OtpScreen(
+                  verificationId: "verificationId", phoneNumber: mobile)))
       : auth.verifyPhoneNumber(
           phoneNumber: mobile,
           timeout: const Duration(minutes: 2),
           verificationCompleted: (authCredential) async {
-            log("LIB: auth done");
             var result = await auth.signInWithCredential(authCredential);
             User? user = result.user;
             if (user != null) {
@@ -153,21 +170,23 @@ Future<void> registerUser(String mobile, BuildContext context) async {
               MyUser myUser =
                   MyUser(uid: user.uid, phoneNumber: user.phoneNumber!);
               nav.push(getRoute(myUser));
-            } else {
-              log("LIB: Error");
             }
+            isUploading.value = false;
           },
           verificationFailed: (error) {
-            log("LIB:${error.toString()}");
+            var snackBar = SnackBar(
+              content: Text(error.toString()),
+            );
+            ScaffoldMessenger.of(context).showSnackBar(snackBar);
+            isUploading.value = false;
           },
           codeSent: (verificationId, forceResendingToken) {
-            log("LIB: CODE SEND $verificationId");
+            isUploading.value = false;
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (_) => OtpScreen(verificationId: verificationId)));
+                    builder: (_) => OtpScreen(
+                        verificationId: verificationId, phoneNumber: mobile)));
           },
-          codeAutoRetrievalTimeout: (s) {
-            log("LIB: CODE AUTO : $s");
-          });
+          codeAutoRetrievalTimeout: (_) {});
 }
