@@ -19,10 +19,10 @@ void uploadVideoStream({
   required StreamController<VideoUploadState> streamController,
 }) async {
   final child = "POST:${getTimeStampExtention()}";
-  streamController.add(VideoUploadState("Compressing video...", false, false));
+  streamController.add(uploadState("Compressing video...", filePath));
   final video = await VideoCompress.compressVideo(filePath);
   final videoRef = storageRef.child(uid).child(child);
-  streamController.add(VideoUploadState("Starting upload...", false, false));
+  streamController.add(uploadState("Starting upload...", filePath));
 
   try {
     final uploadTask = videoRef.putFile(
@@ -33,27 +33,22 @@ void uploadVideoStream({
         case TaskState.running:
           final progress =
               100.0 * (taskSnapshot.bytesTransferred / taskSnapshot.totalBytes);
-
-          streamController.add(VideoUploadState(
-              "Uploading ${progress.toStringAsFixed(2)} %", false, false));
+          streamController.add(uploadState(
+              "Uploading ${progress.toStringAsFixed(2)} %", filePath));
           break;
         case TaskState.paused:
-          streamController
-              .add(VideoUploadState("Upload paused !", true, false));
+          streamController.add(errorState("Upload paused.", filePath));
           break;
         case TaskState.canceled:
-          streamController
-              .add(VideoUploadState("Upload cancelled !", true, false));
+          streamController.add(errorState("Upload cancelled.", filePath));
           break;
         case TaskState.error:
-          streamController
-              .add(VideoUploadState("Some error occurred.", true, false));
+          streamController.add(errorState("Some error occurred.", filePath));
           break;
         case TaskState.success:
-          streamController
-              .add(VideoUploadState("Just a moment...", false, false));
+          streamController.add(uploadState("Just a moment...", filePath));
           var url = await taskSnapshot.ref.getDownloadURL();
-          streamController.add(VideoUploadState("Finalizing...", false, false));
+          streamController.add(uploadState("Finalizing...", filePath));
           Post post = Post(
             userId: uid,
             videoTitle: title,
@@ -63,12 +58,11 @@ void uploadVideoStream({
             videoLocation: location,
           );
           await savePost(post, child);
-          streamController
-              .add(VideoUploadState("Post uploaded successfully", false, true));
+          streamController.add(successState(filePath));
           break;
       }
     });
   } catch (e) {
-    streamController.add(VideoUploadState(e.toString(), true, false));
+    streamController.add(errorState(e.toString(), filePath));
   }
 }
