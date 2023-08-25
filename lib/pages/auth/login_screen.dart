@@ -182,6 +182,7 @@ Future<void> registerUser(ValueNotifier<bool> isUploading, String mobile,
           },
           codeSent: (verificationId, forceResendingToken) {
             isUploading.value = false;
+            nav.pop();
             Navigator.push(
                 context,
                 MaterialPageRoute(
