@@ -22,7 +22,8 @@ class _UploadScreenState extends State<UploadScreen> {
       StreamController<VideoUploadState>();
 
   void getVideoFile() async {
-    XFile? file = await ImagePicker().pickVideo(source: ImageSource.camera);
+    XFile? file = await ImagePicker().pickVideo(
+        source: ImageSource.camera, maxDuration: const Duration(seconds: 15));
     setState(() {
       if (file != null) {
         videoPath.value = file.path;
@@ -52,6 +53,7 @@ class _UploadScreenState extends State<UploadScreen> {
     for (var element in _controllerMap.entries) {
       element.value.dispose();
     }
+    videoPath.dispose();
   }
 
   @override

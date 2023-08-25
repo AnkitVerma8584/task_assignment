@@ -31,7 +31,10 @@ class OtpScreen extends StatelessWidget {
       Navigator.pop(context);
       Navigator.push(context, getRoute(myUser));
     } else {
-      printLog("Error user null");
+      var snackBar = SnackBar(
+        content: Text("Some error occurred"),
+      );
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
   }
 
@@ -39,65 +42,67 @@ class OtpScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        body: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Hero(
-                  tag: "logo",
-                  child: Image.asset(
-                    getAppLogo(context),
-                    height: getHeight(context) * 0.3,
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text(
-                  "An otp has been sent to your mobile number : $phoneNumber",
-                  style: GoogleFonts.poppins(),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              const SizedBox(height: 20),
-              OTPTextField(
-                length: 6,
-                width: MediaQuery.of(context).size.width,
-                fieldWidth: 50,
-                otpFieldStyle: OtpFieldStyle(
-                  borderColor: getColors(context).primary,
-                  focusBorderColor: getColors(context).primary,
-                  enabledBorderColor: getColors(context).secondary,
-                ),
-                style: const TextStyle(fontSize: 16),
-                textFieldAlignment: MainAxisAlignment.center,
-                spaceBetween: 5,
-                fieldStyle: FieldStyle.box,
-                onCompleted: (pin) async {
-                  await verify(pin, context);
-                },
-              ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  const Spacer(),
-                  const Text("Did not receive otp yet?"),
-                  GestureDetector(
-                    onTap: () {
-                      registerUser(phoneNumber, context);
-                    },
-                    child: const Padding(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 5, vertical: 16),
-                      child: Text("Resend"),
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Hero(
+                    tag: "logo",
+                    child: Image.asset(
+                      getAppLogo(context),
+                      height: getHeight(context) * 0.3,
                     ),
                   ),
-                  const Spacer(),
-                ],
-              )
-            ],
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text(
+                    "An otp has been sent to your mobile number : $phoneNumber",
+                    style: GoogleFonts.poppins(),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                OTPTextField(
+                  length: 6,
+                  width: MediaQuery.of(context).size.width,
+                  fieldWidth: 50,
+                  otpFieldStyle: OtpFieldStyle(
+                    borderColor: getColors(context).primary,
+                    focusBorderColor: getColors(context).primary,
+                    enabledBorderColor: getColors(context).secondary,
+                  ),
+                  style: const TextStyle(fontSize: 16),
+                  textFieldAlignment: MainAxisAlignment.center,
+                  spaceBetween: 5,
+                  fieldStyle: FieldStyle.box,
+                  onCompleted: (pin) async {
+                    await verify(pin, context);
+                  },
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    const Spacer(),
+                    const Text("Did not receive otp yet?"),
+                    GestureDetector(
+                      onTap: () {
+                        registerUser(phoneNumber, context);
+                      },
+                      child: const Padding(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 5, vertical: 16),
+                        child: Text("Resend"),
+                      ),
+                    ),
+                    const Spacer(),
+                  ],
+                )
+              ],
+            ),
           ),
         ),
       ),

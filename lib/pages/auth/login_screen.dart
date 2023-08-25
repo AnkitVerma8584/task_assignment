@@ -22,6 +22,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void dispose() {
     _controller.dispose();
+    isUploading.dispose();
     super.dispose();
   }
 

@@ -6,6 +6,7 @@ import 'package:black_coffer/services/location/current_location.dart';
 import 'package:black_coffer/theme/colors.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/user.dart';
@@ -39,7 +40,7 @@ class HomeScreen extends StatelessWidget {
                 icon: const Icon(Icons.logout))
           ],
         ),
-        body: HomeContent(user: user),
+        body: const HomeContent(),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         floatingActionButton: FloatingActionButton(
             shape:
@@ -105,39 +106,95 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-class HomeContent extends StatelessWidget {
-  const HomeContent({
-    super.key,
-    required this.user,
-  });
+class HomeContent extends StatefulWidget {
+  const HomeContent({super.key});
 
-  final MyUser user;
+  @override
+  State<HomeContent> createState() => _HomeContentState();
+}
+
+class _HomeContentState extends State<HomeContent> {
+  final TextEditingController _controller = TextEditingController();
+  List<Post> posts = [];
+  final List<Post> allPosts = [];
+
+  @override
+  void dispose() {
+    super.dispose();
+    _controller.dispose();
+  }
+
+  void filterSearchResults(String query) {
+    setState(() {
+      if (query.trim().isEmpty) {
+        posts = allPosts;
+      } else {
+        posts = allPosts
+            .where((item) =>
+                item.videoTitle.toLowerCase().contains(query.toLowerCase()))
+            .toList();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(8),
-      child: Expanded(
-        child: StreamBuilder<QuerySnapshot>(
-          stream: getPostStreams(),
-          builder:
-              (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-            if (snapshot.hasError) {
-              return const Text('Something went wrong');
-            }
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator.adaptive());
-            }
-            return ListView(
-              children:
-                  snapshot.data!.docs.reversed.map((DocumentSnapshot document) {
-                Map<String, dynamic> data =
-                    document.data()! as Map<String, dynamic>;
-                return PostCard(post: Post.fromJson(data));
-              }).toList(),
-            );
-          },
-        ),
+      child: Column(
+        children: [
+          TextField(
+            controller: _controller,
+            textInputAction: TextInputAction.search,
+            keyboardType: TextInputType.text,
+            onChanged: (value) => filterSearchResults(value),
+            decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                hintText: "Search for any video title...",
+                prefixIcon: Icon(CupertinoIcons.search, size: 16)),
+          ),
+          const SizedBox(height: 16),
+          Expanded(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: getPostStreams(),
+              builder: (BuildContext context,
+                  AsyncSnapshot<QuerySnapshot> snapshot) {
+                if (snapshot.hasError) {
+                  return const Center(child: Text('Something went wrong'));
+                }
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                      child: CircularProgressIndicator.adaptive());
+                }
+                var newPosts = snapshot.data!.docs.reversed
+                    .map((DocumentSnapshot document) {
+                  Map<String, dynamic> data =
+                      document.data()! as Map<String, dynamic>;
+                  return Post.fromJson(data);
+                }).toList();
+
+                if (newPosts.isEmpty) {
+                  return const Center(child: Text("No posts available"));
+                }
+                allPosts.clear();
+                allPosts.addAll(newPosts);
+                if (_controller.text.trim().isEmpty) {
+                  posts = allPosts;
+                } else {
+                  posts = allPosts
+                      .where((item) => item.videoTitle
+                          .toLowerCase()
+                          .contains(_controller.text.toLowerCase()))
+                      .toList();
+                }
+                return ListView.builder(
+                  itemCount: posts.length,
+                  itemBuilder: (context, index) => PostCard(post: posts[index]),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
