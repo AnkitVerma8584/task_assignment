@@ -33,13 +33,14 @@ Future<String> getCurrentLocation() async {
       .catchError(
           (e) => myLocation = MyLocation(position: null, error: e.toString()));
 
-  String address = "No location found!";
+  String address = "";
   if (myLocation.position != null) {
     List<Placemark> placemarks = await placemarkFromCoordinates(
         myLocation.position!.latitude, myLocation.position!.longitude);
-
-    address =
-        "${placemarks[0].street},  ${placemarks[0].administrativeArea}, ${placemarks[0].country}";
+    if (placemarks.isNotEmpty) {
+      address =
+          "${placemarks[0].street},  ${placemarks[0].administrativeArea}, ${placemarks[0].country}";
+    }
   } else {
     printLog(myLocation.error!);
   }

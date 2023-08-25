@@ -47,11 +47,19 @@ class HomeScreen extends StatelessWidget {
             child: const Icon(Icons.add),
             onPressed: () async {
               var address = await getCurrentLocation();
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (_) =>
-                          UploadScreen(location: address, user: user)));
+              if (address.isEmpty) {
+                var snackBar = const SnackBar(
+                  showCloseIcon: true,
+                  content: Text("Failed to fetch location. Try again."),
+                );
+                ScaffoldMessenger.of(context).showSnackBar(snackBar);
+              } else {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) =>
+                            UploadScreen(location: address, user: user)));
+              }
             }),
         bottomNavigationBar: BottomAppBar(
           shape: const CircularNotchedRectangle(),
@@ -121,7 +129,8 @@ class HomeContent extends StatelessWidget {
               return const Center(child: CircularProgressIndicator.adaptive());
             }
             return ListView(
-              children: snapshot.data!.docs.map((DocumentSnapshot document) {
+              children:
+                  snapshot.data!.docs.reversed.map((DocumentSnapshot document) {
                 Map<String, dynamic> data =
                     document.data()! as Map<String, dynamic>;
                 return PostCard(post: Post.fromJson(data));
