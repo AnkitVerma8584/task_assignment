@@ -1,6 +1,6 @@
 # black_coffer
 
-A new Flutter project.
+A new Flutter project. Upload videos and view them.
 
 ## Getting Started
 
